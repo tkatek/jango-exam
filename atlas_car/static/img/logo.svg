@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 240 80" fill="none">
+  <rect width="240" height="80" rx="10" fill="#071226"/>
+  <g transform="translate(18,16)">
+    <circle cx="18" cy="18" r="18" fill="#b38900" />
+    <path d="M6 28 C12 18, 30 18, 36 28" stroke="#071226" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="52" y="28" fill="#ffd966" font-family="Inter, Arial" font-weight="700" font-size="20">Atlas Car</text>
+  </g>
+</svg>
