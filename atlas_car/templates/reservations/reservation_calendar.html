@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-calendar me-2"></i>Reservation Calendar</h2>
+        <a href="{% url 'reservations:reservation_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+            <h5 class="mb-0">{{ month_name }} {{ year }}</h5>
+            <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-primary btn-sm">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Vehicle</th>
+                            {% for day in days_in_month %}
+                            <th class="text-center" style="min-width: 30px; font-size: 0.8em;">{{ day }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehicle, reservations in calendar_data %}
+                        <tr>
+                            <td class="fw-bold" style="min-width: 150px;">{{ vehicle.brand }} {{ vehicle.model }}<br><small>{{ vehicle.license_plate }}</small></td>
+                            {% for day in days_in_month %}
+                            {% with date_key=year|stringformat:"d"|add:"-"|add:month|stringformat:"02d"|add:"-"|add:day|stringformat:"02d" %}
+                            <td class="p-0 text-center" style="font-size: 0.75em;">
+                                {% for res in reservations %}
+                                {% if res.pickup_date.day <= day and res.return_date.day >= day and res.pickup_date.month == month and res.pickup_date.year == year %}
+                                <a href="{% url 'reservations:reservation_detail' res.pk %}" class="d-block text-decoration-none
+                                    {% if res.status == 'pending' %}bg-warning text-dark
+                                    {% elif res.status == 'confirmed' %}bg-info text-dark
+                                    {% elif res.status == 'active' %}bg-success text-white
+                                    {% elif res.status == 'completed' %}bg-secondary text-white
+                                    {% elif res.status == 'cancelled' %}bg-danger text-white
+                                    {% endif %} p-1 mb-1 rounded">
+                                    {{ res.reservation_number|truncatechars:8 }}
+                                </a>
+                                {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% endwith %}
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <strong>Legend:</strong>
+                <span class="badge bg-warning text-dark mx-1">Pending</span>
+                <span class="badge bg-info text-dark mx-1">Confirmed</span>
+                <span class="badge bg-success mx-1">Active</span>
+                <span class="badge bg-secondary mx-1">Completed</span>
+                <span class="badge bg-danger mx-1">Cancelled</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

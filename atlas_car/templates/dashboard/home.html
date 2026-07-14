@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Atlas Car Location{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="stat-icon text-primary"><i class="fas fa-car"></i></div>
+            <div class="stat-number">{{ total_vehicles }}</div>
+            <div class="stat-label">Total Vehicles</div>
+            <small class="text-success"><i class="fas fa-check"></i> {{ available_vehicles }} available</small>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="stat-icon text-success"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-number">{{ total_reservations }}</div>
+            <div class="stat-label">Total Reservations</div>
+            <small class="text-info">{{ active_reservations }} active</small>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="stat-icon text-warning"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="stat-number">{{ monthly_revenue|floatformat:0 }}</div>
+            <div class="stat-label">Monthly Revenue (MAD)</div>
+            <small class="text-muted">Year: {{ yearly_revenue|floatformat:0 }} MAD</small>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="stat-icon text-info"><i class="fas fa-chart-pie"></i></div>
+            <div class="stat-number">{{ occupancy_rate }}%</div>
+            <div class="stat-label">Fleet Occupancy</div>
+            <small class="text-muted">{{ rented_vehicles }} rented / {{ total_vehicles }}</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Recent Reservations</h6>
+                <a href="{% url 'reservations:reservation_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Customer</th>
+                            <th>Vehicle</th>
+                            <th>Dates</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in recent_reservations %}
+                        <tr>
+                            <td><a href="{% url 'reservations:reservation_detail' res.pk %}">{{ res.reservation_number }}</a></td>
+                            <td>{{ res.customer }}</td>
+                            <td>{{ res.vehicle }}</td>
+                            <td>{{ res.pickup_date|date:"d/m" }} - {{ res.return_date|date:"d/m" }}</td>
+                            <td><span class="badge badge-status bg-{% if res.status == 'pending' %}warning{% elif res.status == 'confirmed' %}info{% elif res.status == 'active' %}success{% elif res.status == 'completed' %}secondary{% else %}danger{% endif %}">{{ res.get_status_display }}</span></td>
+                            <td>{{ res.total|floatformat:0 }} MAD</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">No reservations yet</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card mb-4">
+            <div class="card-header"><h6 class="mb-0">Upcoming Returns</h6></div>
+            <div class="card-body">
+                {% for res in upcoming_returns %}
+                <div class="d-flex align-items-center mb-3 p-2 rounded" style="background: #fff3cd;">
+                    <i class="fas fa-exclamation-triangle text-warning me-3"></i>
+                    <div>
+                        <strong>{{ res.vehicle }}</strong><br>
+                        <small>{{ res.customer }} - Due: {{ res.return_date|date:"d/m/Y" }}</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No upcoming returns</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Recent Alerts</h6>
+                <a href="{% url 'alerts:alert_list' %}" class="btn btn-sm btn-outline-danger">View All</a>
+            </div>
+            <div class="card-body">
+                {% for alert in alerts %}
+                <div class="d-flex align-items-start mb-2">
+                    <i class="fas fa-bell text-danger me-2 mt-1"></i>
+                    <small>{{ alert.message|truncatewords:10 }}</small>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No unread alerts</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header"><h6 class="mb-0">Fleet Status</h6></div>
+            <div class="card-body">
+                <canvas id="fleetChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Revenue & Reservations</h6>
+                <a href="{% url 'dashboard:charts' %}" class="btn btn-sm btn-outline-primary">Full Charts</a>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+fetch('{% url "reports:revenue_report" %}').then(r=>r.text()).then(()=>{
+});
+const fleetCtx = document.getElementById('fleetChart').getContext('2d');
+new Chart(fleetCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Available', 'Rented', 'Maintenance', 'Out of Service'],
+        datasets: [{
+            data: [{{ available_vehicles }}, {{ rented_vehicles }}, {{ stats.maintenance|default:0 }}, {{ stats.out_of_service|default:0 }}],
+            backgroundColor: ['#198754', '#0d6efd', '#ffc107', '#dc3545']
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+const revCtx = document.getElementById('revenueChart').getContext('2d');
+fetch('/api/monthly-data/').then(r=>r.json()).then(data => {}).catch(()=>{});
+new Chart(revCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        datasets: [{
+            label: 'Revenue (MAD)',
+            data: [0,0,0,0,0,0,0,0,0,0,0,0],
+            backgroundColor: 'rgba(13,110,253,0.7)'
+        }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

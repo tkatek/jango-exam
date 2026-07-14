@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-file-invoice me-2"></i>Invoice {{ invoice.invoice_number }}</h2>
+        <div>
+            <a href="{% url 'invoices:invoice_pdf' invoice.pk %}" class="btn btn-danger me-1">
+                <i class="fas fa-file-pdf me-1"></i>Download PDF
+            </a>
+            <a href="{% url 'invoices:invoice_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Invoice Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Invoice #:</strong> {{ invoice.invoice_number }}</p>
+                            <p><strong>Reservation #:</strong> {{ invoice.reservation.reservation_number }}</p>
+                            <p><strong>Customer:</strong> {{ invoice.reservation.customer }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Vehicle:</strong> {{ invoice.reservation.vehicle }}</p>
+                            <p><strong>Rental Period:</strong> {{ invoice.reservation.pickup_date }} - {{ invoice.reservation.return_date }}</p>
+                            <p><strong>Created At:</strong> {{ invoice.created_at }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Amounts</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Subtotal:</strong> {{ invoice.subtotal }} MAD</p>
+                    <p><strong>VAT (20%):</strong> {{ invoice.vat }} MAD</p>
+                    <hr>
+                    <p class="fs-4 fw-bold text-success"><strong>Total:</strong> {{ invoice.total }} MAD</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

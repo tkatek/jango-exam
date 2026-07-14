@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-bar me-2"></i>Reports</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <a href="{% url 'reports:monthly_activity' %}" class="text-decoration-none">
+                <div class="card shadow h-100 border-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Monthly Activity</h5>
+                        <p class="card-text text-muted">View monthly rental activity and statistics</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-4">
+            <a href="{% url 'reports:fleet_report' %}" class="text-decoration-none">
+                <div class="card shadow h-100 border-success">
+                    <div class="card-body text-center">
+                        <i class="fas fa-car fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Fleet Report</h5>
+                        <p class="card-text text-muted">Vehicle fleet status and utilization</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-4">
+            <a href="{% url 'reports:revenue_report' %}" class="text-decoration-none">
+                <div class="card shadow h-100 border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-dollar-sign fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Revenue Report</h5>
+                        <p class="card-text text-muted">Revenue analysis and financial data</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 mb-4">
+            <a href="{% url 'reports:customer_report' %}" class="text-decoration-none">
+                <div class="card shadow h-100 border-info">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Customer Report</h5>
+                        <p class="card-text text-muted">Customer statistics and top customers</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

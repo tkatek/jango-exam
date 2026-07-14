@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle }} - Atlas Car Location{% endblock %}
+{% block page_title %}{{ vehicle.brand }} {{ vehicle.model }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <h6 class="mb-0">Vehicle Information</h6>
+                <div>
+                    {% if user.profile.is_admin %}
+                    <a href="{% url 'vehicles:vehicle_edit' vehicle.pk %}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="{% url 'vehicles:vehicle_delete' vehicle.pk %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
+                        <p><strong>Brand:</strong> {{ vehicle.brand }}</p>
+                        <p><strong>Model:</strong> {{ vehicle.model }}</p>
+                        <p><strong>Year:</strong> {{ vehicle.year }}</p>
+                        <p><strong>Color:</strong> {{ vehicle.color }}</p>
+                        <p><strong>Category:</strong> {{ vehicle.get_category_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Transmission:</strong> {{ vehicle.get_transmission_display }}</p>
+                        <p><strong>Seats:</strong> {{ vehicle.seats }}</p>
+                        <p><strong>Mileage:</strong> {{ vehicle.mileage }} km</p>
+                        <p><strong>Last Revision:</strong> {{ vehicle.last_revision|date:"d/m/Y"|default:"N/A" }}</p>
+                        <p><strong>Daily Price:</strong> {{ vehicle.daily_price }} MAD</p>
+                        <p><strong>Deposit:</strong> {{ vehicle.deposit }} MAD</p>
+                    </div>
+                    <div class="col-12">
+                        <p><strong>Status:</strong> <span class="badge bg-{% if vehicle.status == 'available' %}success{% elif vehicle.status == 'rented' %}info{% elif vehicle.status == 'maintenance' %}warning{% else %}danger{% endif %}">{{ vehicle.get_status_display }}</span></p>
+                        <p><strong>Maintenance Threshold:</strong> {{ vehicle.maintenance_threshold }} km
+                        {% if vehicle.needs_maintenance %} <span class="badge bg-warning">Needs Maintenance</span>{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Maintenance History</h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Date</th><th>Type</th><th>Garage</th><th>Mileage</th><th>Cost</th></tr></thead>
+                    <tbody>
+                        {% for m in maintenance_history %}
+                        <tr>
+                            <td>{{ m.date|date:"d/m/Y" }}</td>
+                            <td>{{ m.get_maintenance_type_display }}</td>
+                            <td>{{ m.garage }}</td>
+                            <td>{{ m.mileage }} km</td>
+                            <td>{{ m.cost }} MAD</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">No maintenance records</td></tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if maintenance_history %}
+                    <tfoot><tr><td colspan="4" class="text-end"><strong>Total:</strong></td><td><strong>{{ total_maintenance }} MAD</strong></td></tr></tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        {% if vehicle.photo %}
+        <div class="card mb-4">
+            <img src="{{ vehicle.photo.url }}" class="card-img-top" style="max-height:300px;object-fit:cover;" alt="{{ vehicle }}">
+        </div>
+        {% endif %}
+        <div class="card">
+            <div class="card-body text-center">
+                <a href="{% url 'maintenance:maintenance_create' %}" class="btn btn-warning w-100 mb-2"><i class="fas fa-wrench"></i> Add Maintenance</a>
+                <a href="{% url 'maintenance:vehicle_maintenance_history' vehicle.pk %}" class="btn btn-outline-info w-100"><i class="fas fa-history"></i> Full History</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

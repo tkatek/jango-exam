@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-file-invoice me-2"></i>Reservation {{ reservation.reservation_number }}</h2>
+        <a href="{% url 'reservations:reservation_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Reservation Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Reservation #:</strong> {{ reservation.reservation_number }}</p>
+                            <p><strong>Customer:</strong> {{ reservation.customer }}</p>
+                            <p><strong>Vehicle:</strong> {{ reservation.vehicle }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Pickup Date:</strong> {{ reservation.pickup_date }}</p>
+                            <p><strong>Return Date:</strong> {{ reservation.return_date }}</p>
+                            <p><strong>Rental Days:</strong> {{ reservation.rental_days }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Pickup Location:</strong> {{ reservation.get_pickup_location_display }}</p>
+                            <p><strong>Return Location:</strong> {{ reservation.get_return_location_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong>
+                                <span class="badge
+                                    {% if reservation.status == 'pending' %}bg-warning
+                                    {% elif reservation.status == 'confirmed' %}bg-info
+                                    {% elif reservation.status == 'active' %}bg-success
+                                    {% elif reservation.status == 'completed' %}bg-secondary
+                                    {% elif reservation.status == 'cancelled' %}bg-danger
+                                    {% endif %}">
+                                    {{ reservation.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Pricing</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Subtotal:</strong> {{ reservation.subtotal }} MAD</p>
+                    <p><strong>VAT (20%):</strong> {{ reservation.vat }} MAD</p>
+                    <hr>
+                    <p class="fs-5 fw-bold"><strong>Total:</strong> {{ reservation.total }} MAD</p>
+                    <p><strong>Deposit:</strong> {{ reservation.deposit }} MAD</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Status Actions</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2">
+                {% if reservation.can_confirm %}
+                <a href="{% url 'reservations:reservation_confirm' reservation.pk %}" class="btn btn-info">
+                    <i class="fas fa-check me-1"></i>Confirm
+                </a>
+                {% endif %}
+                {% if reservation.can_start %}
+                <a href="{% url 'reservations:reservation_start' reservation.pk %}" class="btn btn-success">
+                    <i class="fas fa-play me-1"></i>Start Rental
+                </a>
+                {% endif %}
+                {% if reservation.can_complete %}
+                <a href="{% url 'reservations:reservation_complete' reservation.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-flag-checkered me-1"></i>Complete
+                </a>
+                {% endif %}
+                {% if reservation.can_cancel %}
+                <a href="{% url 'reservations:reservation_cancel' reservation.pk %}" class="btn btn-danger">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payments</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Payment #</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in reservation.payments.all %}
+                        <tr>
+                            <td>{{ payment.id }}</td>
+                            <td>{{ payment.get_method_display }}</td>
+                            <td>{{ payment.amount }} MAD</td>
+                            <td>{{ payment.payment_date }}</td>
+                            <td>{{ payment.reference|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No payments recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

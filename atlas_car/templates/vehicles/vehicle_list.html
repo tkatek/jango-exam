@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Vehicles - Atlas Car Location{% endblock %}
+{% block page_title %}Vehicle Fleet{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="card stat-card"><div class="stat-number text-primary">{{ stats.total }}</div><div class="stat-label">Total</div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card"><div class="stat-number text-success">{{ stats.available }}</div><div class="stat-label">Available</div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card"><div class="stat-number text-info">{{ stats.rented }}</div><div class="stat-label">Rented</div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card"><div class="stat-number text-warning">{{ stats.maintenance }}</div><div class="stat-label">Maintenance</div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card"><div class="stat-number text-danger">{{ stats.out_of_service }}</div><div class="stat-label">Out of Service</div></div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">{{ filter_form.category }}</div>
+            <div class="col-md-2">{{ filter_form.status }}</div>
+            <div class="col-md-2">{{ filter_form.brand }}</div>
+            <div class="col-md-2">{{ filter_form.transmission }}</div>
+            <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Filter</button></div>
+            <div class="col-md-2">
+                {% if user.profile.is_admin %}
+                <a href="{% url 'vehicles:vehicle_create' %}" class="btn btn-success w-100"><i class="fas fa-plus"></i> Add Vehicle</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for vehicle in vehicles %}
+    <div class="col-xl-3 col-md-6">
+        <div class="card h-100">
+            {% if vehicle.photo %}
+            <img src="{{ vehicle.photo.url }}" class="card-img-top" style="height:180px;object-fit:cover;" alt="{{ vehicle }}">
+            {% else %}
+            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height:180px;">
+                <i class="fas fa-car fa-3x text-muted"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h6 class="card-title">{{ vehicle.brand }} {{ vehicle.model }}</h6>
+                <p class="text-muted small mb-1"><i class="fas fa-id-card"></i> {{ vehicle.license_plate }}</p>
+                <p class="mb-1"><span class="badge bg-secondary">{{ vehicle.get_category_display }}</span>
+                <span class="badge bg-{% if vehicle.status == 'available' %}success{% elif vehicle.status == 'rented' %}info{% elif vehicle.status == 'maintenance' %}warning{% else %}danger{% endif %}">{{ vehicle.get_status_display }}</span></p>
+                <p class="mb-0"><strong>{{ vehicle.daily_price }}</strong> MAD/day</p>
+                {% if vehicle.needs_maintenance %}
+                <div class="alert alert-warning py-1 px-2 mt-2 mb-0 small"><i class="fas fa-exclamation-triangle"></i> Maintenance needed</div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'vehicles:vehicle_detail' vehicle.pk %}" class="btn btn-sm btn-outline-primary">Details</a>
+                {% if user.profile.is_admin %}
+                <a href="{% url 'vehicles:vehicle_edit' vehicle.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <i class="fas fa-car fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No vehicles found.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

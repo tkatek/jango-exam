@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line me-2"></i>Dashboard</h2>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow border-primary">
+                <div class="card-body text-center">
+                    <h3 class="text-primary">{{ stats.total }}</h3>
+                    <p class="mb-0">Total Vehicles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow border-success">
+                <div class="card-body text-center">
+                    <h3 class="text-success">{{ stats.available }}</h3>
+                    <p class="mb-0">Available</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow border-info">
+                <div class="card-body text-center">
+                    <h3 class="text-info">{{ stats.rented }}</h3>
+                    <p class="mb-0">Currently Rented</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow border-warning">
+                <div class="card-body text-center">
+                    <h3 class="text-warning">{{ stats.maintenance }}</h3>
+                    <p class="mb-0">In Maintenance</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Vehicle Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly Reservations</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="reservationsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Categories</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status Distribution Pie Chart
+    var statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Available', 'Rented', 'Maintenance', 'Out of Service'],
+                datasets: [{
+                    data: [{{ stats.available }}, {{ stats.rented }}, {{ stats.maintenance }}, {{ stats.out_of_service }}],
+                    backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // Monthly Reservations Bar Chart
+    var reservationsCtx = document.getElementById('reservationsChart');
+    if (reservationsCtx) {
+        var months = [{% for entry in monthly_reservations %}'{{ entry.month }}',{% endfor %}];
+        var counts = [{% for entry in monthly_reservations %}{{ entry.count }},{% endfor %}];
+        new Chart(reservationsCtx, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Reservations',
+                    data: counts,
+                    backgroundColor: 'rgba(23, 162, 184, 0.6)',
+                    borderColor: 'rgba(23, 162, 184, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Monthly Revenue Line Chart
+    var revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        var rMonths = [{% for entry in monthly_revenue %}'{{ entry.month }}',{% endfor %}];
+        var rValues = [{% for entry in monthly_revenue %}{{ entry.revenue }},{% endfor %}];
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: rMonths,
+                datasets: [{
+                    label: 'Revenue (MAD)',
+                    data: rValues,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // Vehicle Categories Bar Chart
+    var categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx) {
+        var cats = [{% for entry in category_stats %}'{{ entry.category }}',{% endfor %}];
+        var catCounts = [{% for entry in category_stats %}{{ entry.count }},{% endfor %}];
+        new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: cats,
+                datasets: [{
+                    label: 'Vehicles',
+                    data: catCounts,
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1']
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
